@@ -2,6 +2,9 @@
 var game = new Phaser.Game(800, 600, Phaser.AUTO, 'space-shooter', {preload: preload, create: create, update: update, render: render});
 
 var player;
+// enemies
+var greenEnemies
+
 var starfield;
 var cursors;
 var bank;
@@ -19,6 +22,7 @@ function preload() {
 	game.load.image('starfield', 'assets/starfield.png');
 	game.load.image('ship', 'assets/player.png');
 	game.load.image('bullet', 'assets/bullet.png');
+	game.load.image('enemy-green', 'assets/enemy-green.png');
 }
 
 function create() {
@@ -43,6 +47,20 @@ function create() {
 	// we give the physics engine more info about our player
 	player.body.maxVelocity.setTo(MAXSPEED, MAXSPEED);
 	player.body.drag.setTo(DRAG, DRAG);
+	
+	// The Baddies
+	greenEnemies = game.add.group();
+	greenEnemies.enableBody = true;
+	greenEnemies.physicsBodyType = Phaser.Physics.ARCADE;
+	greenEnemies.createMultiple(5, 'enemy-green');
+	greenEnemies.setAll('anchor.x', 0.5);
+	greenEnemies.setAll('anchor.y', 0.5);
+	greenEnemies.setAll('scale.x', 0.5);
+	greenEnemies.setAll('angle', 180);
+	greenEnemies.setAll('outOfBoundsKill', true);
+	greenEnemies.setAll('checkWorkdBounds', true);
+	
+	launchGreenEnemy();
 	
 	// and some controls to play the game with
 	cursors = game.input.keyboard.createCursorKeys();
@@ -134,10 +152,32 @@ function fireBullet() {
 			bullet.angle = player.angle;
 			game.physics.arcade.velocityFromAngle(bullet.angle - 90, BULLET_SPEED, bullet.body.velocity);
 			
-			bulletTimer = game.time.now + BULLET_SPACING
+			bulletTimer = game.time.now + BULLET_SPACING;
 			
 		}
 	}
+}
+
+function launchGreenEnemy() {
+	var MIN_ENEMY_SPACING = 300;
+	var MAX_ENEMY_SPACING = 3000;
+	var ENEMY_SPEED = 300;
+	
+	var enemy = greenEnemies.getFirstExists(false);
+	if(enemy) {
+		enemy.reset(game.rnd.integerInRange(0, game.width), -20);
+		enemy.body.velocity.x = game.rnd.integerInRange(-300, 300);
+		enemy.body.velocity.y = ENEMY_SPEED;
+		enemy.body.drag.x = 100;
+		
+		// update function of each enemy ship to update rotation etc
+		enemy.udpate = function() {
+			enemy.angle = 180 - game.math.radToDeg(Math.atan2(enemy.body.velocity.x, enemy.body.velocity.y));
+		}
+	}
+	
+	// send another enemy soon
+	game.time.events.add(game.rnd.integerInRange(MIN_ENEMY_SPACING, MAX_ENEMY_SPACING), launchGreenEnemy);
 }
 
 function render() {
