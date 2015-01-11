@@ -8,6 +8,8 @@ var bank;
 var shipTrail;
 var bullets;
 var fireButton;
+// to limit fire rate - remember
+var bulletTimer = 0;
 
 var ACCELERATION = 600;
 var DRAG = 400;
