@@ -156,6 +156,7 @@ function update() {
 	
 	// Check Collisions
 	game.physics.arcade.overlap(player, greenEnemies, shipCollide, null, this);
+	game.physics.arcade.overlap(greenEnemies,bullets, hitEnemy, null, this);
 }
 
 function fireBullet() {
@@ -238,6 +239,16 @@ function shipCollide(player, enemy) {
 	explosion.alpha = 0.7;
 	explosion.play('explosion', 30, false, true);
 	enemy.kill();
+}
+
+function hitEnemy(enemy, bullet) {
+	var explosion = explosions.getFirstExists(false);
+	explosion.reset(bullet.body.x + bullet.body.halfWidth, bullet.body.y + bullet.body.halfHeight);
+	explosion.body.velocity.y = enemy.body.velocity.y;
+	explosion.alpha = 0.7;
+	explosion.play('explosion', 30, false, true);
+	enemy.kill();
+	bullet.kill();
 }
 
 function render() {
