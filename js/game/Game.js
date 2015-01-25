@@ -1,8 +1,6 @@
 // var game = new Phaser.Game(window.innerWidth, window.innerHeight, Phaser.AUTO, 'space-shooter', {preload: preload, create: create, update: update, render: render});
 var game = new Phaser.Game(800, 600, Phaser.AUTO, 'space-shooter', {preload: preload, create: create, update: update, render: render});
 
-// for degugging
-var count = 0;
 
 var player;
 // enemies
@@ -12,6 +10,7 @@ var starfield;
 var cursors;
 var bank;
 var shipTrail;
+var explosions;
 var bullets;
 var fireButton;
 // to limit fire rate - remember
@@ -66,6 +65,7 @@ function create() {
 	// greenEnemies.setAll('checkWorldBounds', true);
 	greenEnemies.forEach(function(enemy){
 		addEnemyEmitterTrail(enemy);
+		enemy.body.setSize(enemy.width * 3 /4, enemy.height * 3 / 4);
 		enemy.events.onKilled.add(function(){
 			enemy.trail.kill();
 		});
@@ -88,6 +88,17 @@ function create() {
 	shipTrail.setAlpha(1, 0.01, 800);
 	shipTrail.setScale(0.05, 0.4, 0.05, 0.4, 2000, Phaser.Easing.Quintic.Out);
 	shipTrail.start(false, 5000, 10);
+	
+	// An explosion pool
+	explosions = game.add.group();
+	explosions.enableBody = true;
+	explosions.physicsBodyType = Phaser.Physics.ARCADE;
+	explosions.createMultiple(30, 'explosion');
+	explosions.setAll('anchor.x', 0.5);
+	explosions.setAll('anchor.y', 0.5);
+	explosions.forEach(function(explosion) {
+		explosion.animations.add('explosion');
+	});
 }
 
 function update() {
@@ -142,6 +153,9 @@ function update() {
 	
 	// Keep the shipTrail lined up with the ship
 	shipTrail.x = player.x;
+	
+	// Check Collisions
+	game.physics.arcade.overlap(player, greenEnemies, shipCollide, null, this);
 }
 
 function fireBullet() {
@@ -217,6 +231,18 @@ function addEnemyEmitterTrail(enemy) {
 	enemy.trail = enemyTrail;
 }
 
-function render() {
+function shipCollide(player, enemy) {
+	var explosion = explosions.getFirstExists(false);
+	explosion.reset(enemy.body.x + enemy.body.halfWidth, enemy.body.y + enemy.body.halfHeight);
+	explosion.body.velocity.y = enemy.body.velocity.y;
+	explosion.alpha = 0.7;
+	explosion.play('explosion', 30, false, true);
+	enemy.kill();
+}
 
+function render() {
+	//for (var i = 0; i < greenEnemies.length; i++) {
+	//	game.debug.body(greenEnemies.children[i]);
+	//}
+	//game.debug.body(player);
 }
