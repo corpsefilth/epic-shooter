@@ -1,6 +1,9 @@
 // var game = new Phaser.Game(window.innerWidth, window.innerHeight, Phaser.AUTO, 'space-shooter', {preload: preload, create: create, update: update, render: render});
 var game = new Phaser.Game(800, 600, Phaser.AUTO, 'space-shooter', {preload: preload, create: create, update: update, render: render});
 
+// for degugging
+var count = 0;
+
 var player;
 // enemies
 var greenEnemies;
@@ -174,6 +177,7 @@ function launchGreenEnemy() {
 	
 	var enemy = greenEnemies.getFirstExists(false);
 	if(enemy) {
+		
 		enemy.reset(game.rnd.integerInRange(0, game.width), -20);
 		enemy.body.velocity.x = game.rnd.integerInRange(-300, 300);
 		enemy.body.velocity.y = ENEMY_SPEED;
@@ -181,12 +185,14 @@ function launchGreenEnemy() {
 		
 		enemy.trail.start(false, 800, 1);
 		
+		
 		// update function of each enemy ship to update rotation etc
-		enemy.udpate = function() {
+		enemy.update = function() {
+			
 			enemy.angle = 180 - game.math.radToDeg(Math.atan2(enemy.body.velocity.x, enemy.body.velocity.y));
 			
 			enemy.trail.x = enemy.x;
-			enemy.trail.y = enemy.y -10;
+			enemy.trail.y = enemy.y - 10;
 			
 			// Kill enemies once they go off screen
 			if(enemy.y > game.height + 200) {
@@ -200,6 +206,7 @@ function launchGreenEnemy() {
 }
 
 function addEnemyEmitterTrail(enemy) {
+	
 	var enemyTrail = game.add.emitter(enemy.x, player.y - 10, 100);
 	enemyTrail.width = 10;
 	enemyTrail.makeParticles('explosion', [1,2,3,4,5]);
