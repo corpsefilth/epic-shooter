@@ -16,6 +16,9 @@ var fireButton;
 // to limit fire rate - remember
 var bulletTimer = 0;
 
+// shields
+var shields;
+
 var ACCELERATION = 600;
 var DRAG = 400;
 var MAXSPEED = 400
@@ -44,12 +47,16 @@ function create() {
 	
 	// the hero
 	player = game.add.sprite(400, 500, 'ship');
+	player.health = 100;
 	player.anchor.setTo(0.5, 0.5);
 	game.physics.enable(player, Phaser.Physics.ARCADE);
 	
 	// we give the physics engine more info about our player
 	player.body.maxVelocity.setTo(MAXSPEED, MAXSPEED);
 	player.body.drag.setTo(DRAG, DRAG);
+	player.events.onKilled.add(function(){
+		shipTrail.kill();
+	})
 	
 	// The Baddies
 	greenEnemies = game.add.group();
@@ -66,6 +73,7 @@ function create() {
 	greenEnemies.forEach(function(enemy){
 		addEnemyEmitterTrail(enemy);
 		enemy.body.setSize(enemy.width * 3 /4, enemy.height * 3 / 4);
+		enemy.damageAmount = 20;
 		enemy.events.onKilled.add(function(){
 			enemy.trail.kill();
 		});
@@ -99,6 +107,12 @@ function create() {
 	explosions.forEach(function(explosion) {
 		explosion.animations.add('explosion');
 	});
+	
+	// Shield Stat
+	shields = game.add.text(game.world.width - 150, 10, 'Shields: ' + player.health +'%', { font: '20px Arial', fill: '#fff' });
+	shields.render = function() {
+		shields.text = 'Shields: ' + Math.max(player.health, 0) +'%';
+	};
 }
 
 function update() {
@@ -130,7 +144,7 @@ function update() {
 	}
 	
 	// Fire Bullet
-	if (fireButton.isDown || game.input.activePointer.isDown) {
+	if (player.alive && (fireButton.isDown || game.input.activePointer.isDown)) {
 		fireBullet();
 	}
 	
@@ -239,6 +253,9 @@ function shipCollide(player, enemy) {
 	explosion.alpha = 0.7;
 	explosion.play('explosion', 30, false, true);
 	enemy.kill();
+	
+	player.damage(enemy.damageAmount)
+	shields.render();
 }
 
 function hitEnemy(enemy, bullet) {
