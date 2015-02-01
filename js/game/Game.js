@@ -360,7 +360,7 @@ function launchBlueEnemy() {
 						this.lastShot = game.time.now;
 						this.bullets--;
 						enemyBullet.reset(this.x, this.y + this.height / 2);
-						enemyBullet.damageAmount = this.damageAmount;
+						enemyBullet.damageAmount = 40;//this.damageAmount;
 						var angle = game.physics.arcade.moveToObject(enemyBullet, player, bulletSpeed);
 						enemyBullet.angle = game.math.radToDeg(angle);
 				}
