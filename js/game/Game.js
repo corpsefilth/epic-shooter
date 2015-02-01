@@ -6,6 +6,7 @@ var player;
 // enemies
 var greenEnemies;
 var blueEnemies;
+var enemyBullets;
 
 var starfield;
 var cursors;
@@ -37,6 +38,7 @@ function preload() {
 	game.load.image('bullet', 'assets/bullet.png');
 	game.load.image('enemy-green', 'assets/enemy-green.png');
 	game.load.image('enemy-blue', 'assets/enemy-blue.png');
+	game.load.image('blueEnemyBullet', 'assets/enemy-blue-bullet.png');
 	game.load.spritesheet('explosion', 'assets/explode.png', 128, 128);
 	game.load.bitmapFont('spacefont', 'assets/spacefont/spacefont.png', 'assets/spacefont/spacefont.xml');
 }
@@ -81,8 +83,7 @@ function create() {
 	greenEnemies.setAll('scale.x', 0.5);
 	greenEnemies.setAll('scale.y', 0.5);
 	greenEnemies.setAll('angle', 180);
-	// greenEnemies.setAll('outOfBoundsKill', true);
-	// greenEnemies.setAll('checkWorldBounds', true);
+	
 	greenEnemies.forEach(function(enemy){
 		addEnemyEmitterTrail(enemy);
 		enemy.body.setSize(enemy.width * 3 /4, enemy.height * 3 / 4);
@@ -94,7 +95,22 @@ function create() {
 	
 	game.time.events.add(1000, launchGreenEnemy);
 	
-	// blue enemies
+	// Blue enemy's bullets
+	blueEnemyBullets = game.add.group();
+	blueEnemyBullets.enableBody = true;
+	blueEnemyBullets.physicsBodyType = Phaser.Physics.ARCADE;
+	blueEnemyBullets.createMultiple(30, 'blueEnemyBullet');
+	blueEnemyBullets.callAll('crop', null, {x: 90, y: 0, width: 90, height: 70});
+	blueEnemyBullets.setAll('alpha', 0.9);
+	blueEnemyBullets.setAll('anchor.x', 0.5);
+	blueEnemyBullets.setAll('anchor.y', 0.5);
+	blueEnemyBullets.setAll('ourOfBoundsKill', true);
+	blueEnemyBullets.setAll('checkWorldBounds', true);
+	blueEnemyBullets.forEach(function(enemy){
+		enemy.body.setSize(20, 20);
+	});
+	
+	// More Baddies
 	blueEnemies = game.add.group();
 	blueEnemies.enableBody = true;
 	blueEnemies.physicsBodyType = Phaser.Physics.ARCADE;
@@ -221,6 +237,8 @@ function update() {
 	game.physics.arcade.overlap(player, blueEnemies, shipCollide, null, this);
 	game.physics.arcade.overlap(bullets, blueEnemies, hitEnemy, null, this);
 	
+	game.physics.arcade.overlap(blueEnemyBullets, player, enemyHitsPlayer, null, this);
+	
 	// Game Over?
 	if (! player.alive && gameOver.visible === false) {
 		gameOver.visible = true;
@@ -321,6 +339,12 @@ function launchBlueEnemy() {
 			enemy.reset(game.width / 2, -verticalSpacing * i);
 			enemy.body.velocity.y = verticalSpeed;
 			
+			// Set up firing
+			var bulletSpeed = 400;
+			var firingDelay = 2000;
+			enemy.bullets = 1;
+			enemy.lastShot = 0;
+			
 			// Update function for each enemy
 			enemy.update = function(){
 				// Wave Movement
@@ -330,6 +354,21 @@ function launchBlueEnemy() {
 				bank = Math.cos((this.y + 60) / frequency);
 				this.scale.x = 0.5 - Math.abs(bank) / 8;
 				this.angle = 180 - bank * 2;
+				
+				// Fire
+				enemyBullet = blueEnemyBullets.getFirstExists(false);
+				if (enemyBullet &&
+					this.alive &&
+					this.bullets &&
+					this.y > game.width / 8 &&
+					game.time.now > firingDelay + this.lastShot) {
+						this.lastShot = game.time.now;
+						this.bullets--;
+						enemyBullet.reset(this.x, this.y + this.height / 2);
+						enemyBullet.damageAmount = this.damageAmount;
+						var angle = game.physics.arcade.moveToObject(enemyBullet, player, bulletSpeed);
+						enemyBullet.angle = game.math.radToDeg(angle);
+				}
 				
 				// kill enemies once they go off screen
 				if (this.y > game.height + 200) {
@@ -381,11 +420,23 @@ function hitEnemy(enemy, bullet) {
 	scoreText.render();
 }
 
+function enemyHitsPlayer (player, bullet) {
+	var explosion = explosions.getFirstExists(false);
+	explosion.reset(player.body.x + player.body.halfWidth, player.body.y + player.body.halfHeight);
+	explosion.alpha = 0.7;
+	explosion.play('explosion', 30, false, true);
+	bullet.kill;
+	
+	player.damage(bullet.damageAmount);
+	shields.render();
+}
+
 function restart() {
 	// Reset the enemies
 	greenEnemies.callAll('kill');
 	game.time.events.remove(greenEnemyLaunchTimer);
 	game.time.events.add(1000, launchGreenEnemy);
+	blueEnemyBullets.allAll('kill');
 	
 	blueEnemies.callAll('kill');
 	game.time.events.remove(blueEnemyLaunchTimer);
