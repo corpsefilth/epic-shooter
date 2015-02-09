@@ -772,4 +772,5 @@ function restart() {
 	greenEnemySpacing = 1000;
 	blueEnemyLaunched = false;
 	bossLaunched = false;
+	gameMusic.play('', 0, true);
 }
