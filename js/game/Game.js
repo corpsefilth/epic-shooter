@@ -31,7 +31,7 @@ var blueEnemyLaunchTimer;
 var blueEnemyLaunched = false;
 var blueEnemySpacing = 2500;
 
-var bossLaunchtimer;
+var bossLaunchTimer;
 var bossLaunched = false;
 var bossSpacing = 20000;
 var bossBulletTimer = 0;
@@ -162,7 +162,7 @@ function create() {
 				var beforeScaleX = explosions.scale.x;
 				var beforeScaleY = explosions.scale.y;
 				var beforeAlpha = explosions.alpha;
-				explosions.reset(boss.body.x + boss.body.halfWidth, boss.body.y + boss.body.halfHeight);
+				explosion.reset(boss.body.x + boss.body.halfWidth, boss.body.y + boss.body.halfHeight);
 				explosion.alpha = 0.4;
 				explosion.scale.x = 3;
 				explosion.scale.y = 3;
@@ -179,7 +179,7 @@ function create() {
 				boss.dying = false;
 				bossDeath.on = false;
 				// queue next boss
-				bossLaunchtimer = game.time.events.add(game.rnd.integerInRange(bossSpacing, bossSpacing + 5000), launchBoss);
+				bossLaunchTimer = game.time.events.add(game.rnd.integerInRange(bossSpacing, bossSpacing + 5000), launchBoss);
 			}); // end game time events
 			
 			// reset pacing for other enemies
@@ -362,7 +362,7 @@ function create() {
 	// Score
 	scoreText = game.add.bitmapText(10, 10, 'spacefont', '', 50);
 	scoreText.render = function() {
-		scoreText.text = 'Score; ' + score;
+		scoreText.text = 'Score: ' + score;
 	};
 	scoreText.render();
 	
@@ -461,6 +461,14 @@ function update() {
 	
 }
 
+function render() {
+    // for (var i = 0; i < greenEnemies.length; i++)
+    // {
+    //     game.debug.body(greenEnemies.children[i]);
+    // }
+    // game.debug.body(player);
+}
+
 function fireBullet() {
 	
 	switch (player.weaponLevel) {
@@ -538,6 +546,7 @@ function launchGreenEnemy() {
 			// Kill enemies once they go off screen
 			if(enemy.y > game.height + 200) {
 				enemy.kill();
+				enemy.y = -20;
 			}
 		}
 	}
@@ -597,6 +606,7 @@ function launchBlueEnemy() {
 				// kill enemies once they go off screen
 				if (this.y > game.height + 200) {
 					this.kill();
+					this.y = -20;
 				}
 			}
 		}
@@ -634,7 +644,7 @@ function shipCollide(player, enemy) {
 	
 	if (player.alive) {
 		var explosion = explosions.getFirstExists(false);
-		explosion.reset(enemy.body.x + enemy.body.halfWidth, enemy.body.y + player.body.halfHeight);
+		explosion.reset(player.body.x + player.body.halfWidth, player.body.y + player.body.halfHeight);
 		explosion.alpha = 0.7;
 		explosion.play('explosion', 30, false, true);
 	} else {
@@ -675,7 +685,7 @@ function hitEnemy(enemy, bullet) {
 	}
 	
 	// Launch Boss
-	if (!bossLaunched && score > 15000) {
+	if (!bossLaunched && score > 1500) {
 		greenEnemySpacing = 5000;
 		blueEnemySpacing = 12000;
 		
@@ -709,9 +719,9 @@ function bossHitTest(boss, bullet) {
 
 function enemyHitsPlayer (player, bullet) {
 	bullet.kill;
-	var hitDamage = bullet.damageAmount;
-	console.log(hitDamage);
-	player.damage(5); //bullet.damageAmount
+	//var hitDamage = bullet.damageAmount;
+	//console.log(hitDamage);
+	player.damage(bullet.damageAmount); //bullet.damageAmount
 	shields.render();
 	
 	if (player.alive) {
@@ -736,7 +746,7 @@ function restart() {
 	game.time.events.remove(blueEnemyLaunchTimer);
 	boss.kill();
 	booster.kill();
-	game.time.events.remvoe(bossLaunchtimer);
+	game.time.events.remove(bossLaunchTimer);
 	
 	blueEnemies.callAll('kill');
 	game.time.events.remove(blueEnemyLaunchTimer);
@@ -756,11 +766,4 @@ function restart() {
 	greenEnemySpacing = 1000;
 	blueEnemyLaunched = false;
 	bossLaunched = false;
-}
-
-function render() {
-	//for (var i = 0; i < greenEnemies.length; i++) {
-	//	game.debug.body(greenEnemies.children[i]);
-	//}
-	//game.debug.body(player);
 }
