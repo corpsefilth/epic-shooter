@@ -38,6 +38,7 @@ var bossBulletTimer = 0;
 var bossYdirection = -1;
 
 var gameOver;
+var gameMusic;
 
 var ACCELERATION = 600;
 var DRAG = 400;
@@ -54,6 +55,7 @@ function preload() {
 	game.load.bitmapFont('spacefont', 'assets/spacefont/spacefont.png', 'assets/spacefont/spacefont.xml');
 	game.load.image('boss', 'assets/boss.png');
 	game.load.image('deathRay', 'assets/death-ray.png');
+	game.load.audio('gameMusic', ['assets/bgm_action_5.mp3', 'assets/bgm_action_5.ogg'])
 }
 
 function create() {
@@ -366,6 +368,9 @@ function create() {
 	};
 	scoreText.render();
 	
+	gameMusic = game.add.audio('gameMusic');
+	gameMusic.play('', 0, true);
+	
 	// Game Over Text
 	gameOver = game.add.bitmapText(game.world.centerX, game.world.centerY, 'spacefont', 'GAME OVER!', 110);
 	gameOver.x = gameOver.x - gameOver.textWidth / 2;
@@ -443,6 +448,7 @@ function update() {
 	if (! player.alive && gameOver.visible === false) {
 		gameOver.visible = true;
 		gameOver.alpha = 0;
+		gameMusic.stop();
 		var fadeInGameOver = game.add.tween(gameOver);
 		fadeInGameOver.to({alpha: 1}, 1000, Phaser.Easing.Quintic.Out);
 		fadeInGameOver.onComplete.add(setResetHandlers);
