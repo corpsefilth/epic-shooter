@@ -263,7 +263,7 @@ function create() {
 		if (boss.y > 140) {
 			boss.body.acceleration.y = -50;
 		}
-		if (boss.x < 140) {
+		if (boss.y < 140) {
 			boss.body.acceleration.y = 50;
 		}
 		if (boss.x > player.x + 50) {
