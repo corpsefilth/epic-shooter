@@ -120,7 +120,7 @@ function create() {
 	blueEnemyBullets.setAll('alpha', 0.9);
 	blueEnemyBullets.setAll('anchor.x', 0.5);
 	blueEnemyBullets.setAll('anchor.y', 0.5);
-	blueEnemyBullets.setAll('ourOfBoundsKill', true);
+	blueEnemyBullets.setAll('outOfBoundsKill', true);
 	blueEnemyBullets.setAll('checkWorldBounds', true);
 	blueEnemyBullets.forEach(function(enemy){
 		enemy.body.setSize(20, 20);
