@@ -724,12 +724,13 @@ function bossHitTest(boss, bullet) {
 }
 
 function enemyHitsPlayer (player, bullet) {
-	bullet.kill;
+	
+	//console.log(bullet);
 	//var hitDamage = bullet.damageAmount;
 	//console.log(hitDamage);
 	player.damage(bullet.damageAmount); //bullet.damageAmount
 	shields.render();
-	
+	bullet.kill();
 	if (player.alive) {
 		var explosion = explosions.getFirstExists(false);
 		explosion.reset(player.body.x + player.body.halfWidth, player.body.y + player.body.halfHeight);
